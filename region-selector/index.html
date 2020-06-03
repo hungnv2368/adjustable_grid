@@ -200,20 +200,20 @@
                         }
                     }
                 });
-                socket.on('new regions', function (regionsId) {
+                socket.on('new regions', function (objRegions) {
                     socket.emit('new regions_of_request',
                         {
                             usr_request_id: lastRequestID,
-                            region_id: regionsId
+                            region_id: objRegions.id
                         });
                     for (let jj = 0; jj < listDevices.length; jj++) {
                         var device = listDevices[jj];
-                        if (device.lati_north >= lati_north && device.longti_east >= longti_east
-                            && device.lati_south <= lati_south && device.longti_west <= longti_west) {
+                        if (device.lati_north >= objRegions.lati_north && device.longti_east >= objRegions.longti_east
+                            && device.lati_south <= objRegions.lati_south && device.longti_west <= objRegions.longti_west) {
                             socket.emit('update regions',
                                 {
-                                    device_id: device.dev_id,
-                                    region_id: regionsId
+                                    device_id: device.id,
+                                    region_id: objRegions.id
                                 });
                         }
                     }
