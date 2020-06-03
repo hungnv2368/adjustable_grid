@@ -9,6 +9,6 @@
             "request": "launch",
             "name": "Launch Chrome against localhost",
             "file": "${workspaceFolder}/home.html"
-        }
+        },
     ]
 }
