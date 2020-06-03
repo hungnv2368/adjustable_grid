@@ -166,12 +166,12 @@
             $('#btnRequest').click(function () {
                 var req_bandwidth = getRequestedBandwidth();
                 var locations = get_Selected_Regions();
-                // gui yeu cau lay maxid request
+                var lastRequestID = 0;
                 socket.emit('new user_requests', { req_bandwidth });
                 socket.on('new user_requests', function (maxId) {
-                    // insert xong user request
+                    // insert xong user request va nhan duoc ve maxId
                     console.log('da insert xong new user_requests ' + maxId);
-                    var lastRequestID = maxId;
+                    lastRequestID = maxId;
                     if (locations && locations.length > 0) {
                         for (var index = 0; index < locations.length; index++) {
                             var element = locations[index];
@@ -197,23 +197,24 @@
                                     lati_south,
                                     longti_west
                                 });
-                            socket.emit('new regions_of_request',
+                        }
+                    }
+                });
+                socket.on('new regions', function (regionsId) {
+                    socket.emit('new regions_of_request',
+                        {
+                            usr_request_id: lastRequestID,
+                            region_id: regionsId
+                        });
+                    for (let jj = 0; jj < listDevices.length; jj++) {
+                        var device = listDevices[jj];
+                        if (device.lati_north >= lati_north && device.longti_east >= longti_east
+                            && device.lati_south <= lati_south && device.longti_west <= longti_west) {
+                            socket.emit('update regions',
                                 {
-                                    usr_request_id: lastRequestID,
-                                    region_id
+                                    device_id: device.dev_id,
+                                    region_id: regionsId
                                 });
-                            for (let jj = 0; jj < listDevices.length; jj++) {
-                                var device = listDevices[jj];
-                                if (device.lati_north >= lati_north && device.longti_east >= longti_east
-                                    && device.lati_south <= lati_south && device.longti_west <= longti_west) {
-                                    socket.emit('update regions',
-                                        {
-                                            device_id: device.dev_id,
-                                            region_id
-                                        });
-                                }
-                            }
-
                         }
                     }
                 });
