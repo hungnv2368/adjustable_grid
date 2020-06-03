@@ -165,21 +165,65 @@
             });
             $('#btnRequest').click(function () {
                 var req_bandwidth = getRequestedBandwidth();
-                // var locations = get_Selected_Regions();
-                var locations = [];
+                var locations = get_Selected_Regions();
                 // gui yeu cau lay maxid request
                 socket.emit('max user_requests', {});
                 socket.on('max user_requests', function (data) {
+                    console.log('get duoc max user_requests ' + data);
                     var lastRequestID = data;
-                    if (!lastRequestID) lastRequestID = 0;
                     lastRequestID += 1;
-                    // insert user request
+                    console.log('gui insert user_requests ' + lastRequestID);
                     socket.emit('new user_requests', { lastRequestID, req_bandwidth });
-                })
-                socket.on('new user_requests', function (data) {
-                    // insert xong user request
-                    var b = data;
-                })
+                    socket.on('new user_requests', function (datax) {
+                        // insert xong user request
+                        console.log('da insert xong new user_requests ' + datax);
+                        if (locations && locations.length > 0) {
+                            for (var index = 0; index < locations.length; index++) {
+                                var element = locations[index];
+
+                                var region = element.split(",");
+                                region_id = parseInt(region[0]);
+
+                                var north_east = region[1];
+                                var lati = north_east.split(";");
+                                var lati_north = parseFloat(lati[0]);
+                                var longti_east = parseFloat(lati[1]);
+
+                                var south_west = region[2];
+                                var south = south_west.split(";");
+                                var lati_south = parseFloat(south[0]);
+                                var longti_west = parseFloat(south[1]);
+
+                                socket.emit('new regions',
+                                    {
+                                        id: region_id,
+                                        lati_north,
+                                        longti_east,
+                                        lati_south,
+                                        longti_west
+                                    });
+                                socket.emit('new regions_of_request',
+                                    {
+                                        usr_request_id: lastRequestID,
+                                        region_id
+                                    });
+                                for (let jj = 0; jj < listDevices.length; jj++) {
+                                    var device = listDevices[jj];
+                                    if (device.lati_north >= lati_north && device.longti_east >= longti_east
+                                        && device.lati_south <= lati_south && device.longti_west <= longti_west) {
+                                        socket.emit('update regions',
+                                            {
+                                                device_id: device.dev_id,
+                                                region_id
+                                            });
+                                    }
+                                }
+
+                            }
+                        }
+                    });
+                });
+
             });
         });
         function bw_unit_change() {
@@ -203,11 +247,10 @@
             return requested_bandwidth;
         }
         function get_Selected_Regions() {
-            var selected_regions = '';
-
+            var selected_regions = [];
             for (var i = 0; i < info.length; i++) {
                 if (sta[i] == 1)
-                    selected_regions += info[i] + "\n";
+                    selected_regions.push(info[i]);
             }
             return selected_regions;
         }
@@ -217,17 +260,11 @@
         @media screen and (max-width: 1260px) {
 
             /*The following CSS runs only for displays with a width (in pixels) of more than 800px*/
-            #selectedRegion {
-                display: none;
-            }
         }
 
         @media screen and (min-width: 1260px) {
 
             /*The following CSS runs only for displays with a width (in pixels) of less than 800px*/
-            #selectedRegion {
-                display: block;
-            }
         }
 
         #request {
