@@ -10,14 +10,17 @@
     <link href="style.css" rel="stylesheet" type="text/css">
     <script type="text/javascript">
         $(document).ready(function () {
+            // gui ket noi toi websocket server
             var listDevices = [];
             var socket = io.connect('http://localhost:3001');
             socket.on('users connected', function (data) {
+                // nhan duoc dl tu kenh users connected
                 console.log('connect websocket ok');
             })
             socket.on('initial devices', function (data) {
-                // lay danh sach all devices
+                // nhan duoc dl tu kenh initial devices
                 console.log('count list Devices: ', data.length);
+                // vi bien listDevices duoc dung di dung lai nhieu lan nen de global
                 listDevices = data;
             })
             $("#setup").find('input, button, select').each(function () {
@@ -164,12 +167,12 @@
                 gsize = $(this).val();
             });
             $('#btnRequest').click(function () {
-                var req_bandwidth = getRequestedBandwidth();
-                var locations = get_Selected_Regions();
+                var req_bandwidth = getRequestedBandwidth(); // lay request_bandwidth
+                var locations = get_Selected_Regions(); // lay select regions 
                 var lastRequestID = 0;
-                socket.emit('new user_requests', { req_bandwidth });
+                socket.emit('new user_requests', { req_bandwidth }); // gui len server de insert vao user_requests
                 socket.on('new user_requests', function (maxId) {
-                    // insert xong user request va nhan duoc ve maxId
+                    // insert xong user request va nhan duoc ve maxId la lastRequestID
                     console.log('da insert xong new user_requests ' + maxId);
                     lastRequestID = maxId;
                     if (locations && locations.length > 0) {
@@ -188,7 +191,7 @@
                             var south = south_west.split(";");
                             var lati_south = parseFloat(south[0]);
                             var longti_west = parseFloat(south[1]);
-
+                            // gui yeu cau update/insert regions
                             socket.emit('new regions',
                                 {
                                     id: region_id,
@@ -201,6 +204,8 @@
                     }
                 });
                 socket.on('new regions', function (objRegions) {
+                    // nhan duoc update/insert regions thanh cong
+                    // gui tiep insert regions_of_request 
                     socket.emit('new regions_of_request',
                         {
                             usr_request_id: lastRequestID,
@@ -210,6 +215,7 @@
                         var device = listDevices[jj];
                         if (device.lati_north >= objRegions.lati_north && device.longti_east >= objRegions.longti_east
                             && device.lati_south <= objRegions.lati_south && device.longti_west <= objRegions.longti_west) {
+                            // gui upadte regions
                             socket.emit('update regions',
                                 {
                                     device_id: device.id,
@@ -233,7 +239,6 @@
             }
         }
         function getRequestedBandwidth() {
-
             var requested_bandwidth = 1;
             requested_bandwidth = document.getElementById("bandwidth").value;
             var bw_unit = document.getElementById("bandwidth_units").value;
