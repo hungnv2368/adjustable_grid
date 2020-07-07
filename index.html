@@ -167,10 +167,12 @@
                 gsize = $(this).val();
             });
             $('#btnRequest').click(function () {
+                window.open('./process.html','name','width=600,height=400');
                 var req_bandwidth = getRequestedBandwidth(); // lay request_bandwidth
+                var req_delay=getRequestDelay();
                 var locations = get_Selected_Regions(); // lay select regions 
                 var lastRequestID = 0;
-                socket.emit('new user_requests', { req_bandwidth }); // gui len server de insert vao user_requests
+                socket.emit('new user_requests', { req_bandwidth,req_delay }); // gui len server de insert vao user_requests
                 socket.on('new user_requests', function (maxId) {
                     // insert xong user request va nhan duoc ve maxId la lastRequestID
                     console.log('da insert xong new user_requests ' + maxId);
@@ -246,6 +248,10 @@
                 requested_bandwidth *= 1024;
             return requested_bandwidth;
         }
+        function getRequestDelay() {
+            var requestDelay = document.getElementById("delayRequest").value;
+            return requestDelay;
+        }
         function get_Selected_Regions() {
             var selected_regions = [];
             for (var i = 0; i < info.length; i++) {
@@ -276,7 +282,6 @@
 <body>
     <form id="form1" method="post">
         <div id="container">
-            <asp:ScriptManager ID="ScriptManager1" runat="server"></asp:ScriptManager>
             <div id="header">
                 <span>Adjustment Grid-based for Region Selector</span>
             </div>
@@ -308,6 +313,15 @@
                         style="float:left; margin-left:10px; margin-top:10px; height:28px">
                         <option value="mbps">Mbps</option>
                     </select>
+
+                    <label style="float:left; margin-left:10px; margin-top:18px; height:25px"><b>Delay request</b></label>
+                <input id="delayRequest" type="number" value="1" min="1" max="10"
+                    style="float:left; margin-left:10px; margin-top:10px; height:25px" />
+                <select id="delayRequest_units" onchange="delay_unit_change();"
+                    style="float:left; margin-left:10px; margin-top:10px; height:28px">
+                    <option value="ms">ms</option>
+                </select>
+
                     <input id='btnRequest' type='button' value='Request'
                         style="float:left; margin-top:10px; margin-left:10px" height="30px" Width="70px" />
                 </div>
